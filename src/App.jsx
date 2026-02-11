@@ -16,10 +16,9 @@ const App = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [view, setView] = useState("home");
   const [myList, setMyList] = useState([]);
-
-  // Set default ke vidsrc.cc karena saat ini paling stabil untuk HTTPS
   const [server, setServer] = useState("vidsrc.cc");
 
+  // Fungsi Fetch Utama
   const fetchCategory = async (title, setter) => {
     try {
       const response = await fetch(`${API_URL}&s=${title}`);
@@ -37,6 +36,13 @@ const App = () => {
     fetchCategory("Cartoon", setCartoons);
   }, []);
 
+  // FUNGSI BARU: Menangani klik "Lihat Semuanya"
+  const handleSeeAll = (query) => {
+    setSearchTerm(query);
+    fetchCategory(query, setMovies);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const addToMyList = (movie) => {
     if (!myList.find((m) => m.imdbID === movie.imdbID)) {
       setMyList([...myList, movie]);
@@ -51,18 +57,20 @@ const App = () => {
     setIsPlaying(false);
   };
 
-  // FUNGSI PERBAIKAN: Dinamis mengikuti state 'server'
   const getEmbedUrl = () => {
     const type = selectedMovie.Type === "series" ? "tv" : "movie";
-    // Gunakan template literal untuk server agar tombol ganti server berfungsi
     return `https://${server}/v2/embed/${type}/${selectedMovie.imdbID}`;
   };
 
-  const renderSection = (title, data) => (
+  // Update renderSection untuk menerima parameter query
+  const renderSection = (title, data, query) => (
     <section className="movie-section">
       <div className="section-header">
         <h2 className="section-title">{title}</h2>
-        <span className="view-all">Lihat Semuanya ➔</span>
+        {/* Sekarang klik ini akan memicu pencarian kategori tersebut */}
+        <span className="view-all" onClick={() => handleSeeAll(query)}>
+          Lihat Semuanya ➔
+        </span>
       </div>
       <div className="container scroll-container">
         {data.map((movie) => (
@@ -79,13 +87,22 @@ const App = () => {
   return (
     <div className="app">
       <nav className="navbar">
-        <div className="logo" onClick={() => setView("home")}>
+        <div
+          className="logo"
+          onClick={() => {
+            setView("home");
+            setSearchTerm("");
+          }}
+        >
           Cinema<span>Stream</span>
         </div>
         <ul className="nav-links">
           <li
-            onClick={() => setView("home")}
-            className={view === "home" ? "active" : ""}
+            onClick={() => {
+              setView("home");
+              setSearchTerm("");
+            }}
+            className={view === "home" && !searchTerm ? "active" : ""}
           >
             Home
           </li>
@@ -112,6 +129,7 @@ const App = () => {
               <div className="search-box">
                 <input
                   placeholder="Cari film atau anime..."
+                  value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) =>
                     e.key === "Enter" && fetchCategory(searchTerm, setMovies)
@@ -124,11 +142,30 @@ const App = () => {
             </div>
           </header>
           <main className="main-content">
-            {searchTerm && renderSection(`Hasil: ${searchTerm}`, movies)}
-            {renderSection("Anime One Piece", onePiece)}
-            {renderSection("Horror Terpopuler", horror)}
-            {renderSection("Bioskop Indonesia", indoMovies)}
-            {renderSection("Kartun", cartoons)}
+            {/* Jika ada hasil pencarian atau klik 'Lihat Semuanya', tampilkan grid besar */}
+            {searchTerm ? (
+              <section className="movie-section">
+                <h2 className="section-title">
+                  Hasil untuk: <span>{searchTerm}</span>
+                </h2>
+                <div className="container grid-container">
+                  {movies.map((movie) => (
+                    <MovieCard
+                      key={movie.imdbID}
+                      movie={movie}
+                      onClick={() => fetchMovieDetail(movie.imdbID)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <>
+                {renderSection("Anime One Piece", onePiece, "One Piece")}
+                {renderSection("Horror Terpopuler", horror, "Horror")}
+                {renderSection("Bioskop Indonesia", indoMovies, "Indonesia")}
+                {renderSection("Kartun", cartoons, "Cartoon")}
+              </>
+            )}
           </main>
         </>
       ) : view === "mylist" ? (
@@ -176,7 +213,7 @@ const App = () => {
                       onClick={() => setServer("vidsrc.cc")}
                       className={server === "vidsrc.cc" ? "active" : ""}
                     >
-                      S1 (Stabil)
+                      S1
                     </button>
                     <button
                       onClick={() => setServer("vidsrc.me")}
@@ -189,12 +226,6 @@ const App = () => {
                       className={server === "vidsrc.to" ? "active" : ""}
                     >
                       S3
-                    </button>
-                    <button
-                      onClick={() => setServer("vidsrc.xyz")}
-                      className={server === "vidsrc.xyz" ? "active" : ""}
-                    >
-                      S4
                     </button>
                   </div>
                   <div className="video-player-wrapper">
