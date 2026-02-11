@@ -16,7 +16,9 @@ const App = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [view, setView] = useState("home");
   const [myList, setMyList] = useState([]);
-  const [server, setServer] = useState("vidsrc.xyz");
+
+  // Set default ke vidsrc.cc karena saat ini paling stabil untuk HTTPS
+  const [server, setServer] = useState("vidsrc.cc");
 
   const fetchCategory = async (title, setter) => {
     try {
@@ -49,11 +51,11 @@ const App = () => {
     setIsPlaying(false);
   };
 
-  // FUNGSI PENTING: Menentukan link embed berdasarkan tipe (Movie atau Series)
+  // FUNGSI PERBAIKAN: Dinamis mengikuti state 'server'
   const getEmbedUrl = () => {
     const type = selectedMovie.Type === "series" ? "tv" : "movie";
-    // Menggunakan vidsrc.pro atau vidsrc.in yang biasanya lebih lancar untuk HTTPS
-    return `https://vidsrc.pro/embed/${type}/${selectedMovie.imdbID}`;
+    // Gunakan template literal untuk server agar tombol ganti server berfungsi
+    return `https://${server}/v2/embed/${type}/${selectedMovie.imdbID}`;
   };
 
   const renderSection = (title, data) => (
@@ -150,7 +152,8 @@ const App = () => {
             Tentang <span>Dimas</span>
           </h2>
           <p>
-            CinemaStream adalah portofolio <strong>Solusi Dimas</strong>.
+            CinemaStream adalah portofolio <strong>Solusi Dimas</strong> buatan
+            Dimas Pratama Adji.
           </p>
         </main>
       )}
@@ -170,26 +173,26 @@ const App = () => {
                   <div className="server-selector">
                     <span>Ganti Server: </span>
                     <button
-                      onClick={() => setServer("vidsrc.xyz")}
-                      className={server === "vidsrc.xyz" ? "active" : ""}
+                      onClick={() => setServer("vidsrc.cc")}
+                      className={server === "vidsrc.cc" ? "active" : ""}
                     >
-                      S1
-                    </button>
-                    <button
-                      onClick={() => setServer("vidsrc.to")}
-                      className={server === "vidsrc.to" ? "active" : ""}
-                    >
-                      S2
+                      S1 (Stabil)
                     </button>
                     <button
                       onClick={() => setServer("vidsrc.me")}
                       className={server === "vidsrc.me" ? "active" : ""}
                     >
+                      S2
+                    </button>
+                    <button
+                      onClick={() => setServer("vidsrc.to")}
+                      className={server === "vidsrc.to" ? "active" : ""}
+                    >
                       S3
                     </button>
                     <button
-                      onClick={() => setServer("vidsrc.cc")}
-                      className={server === "vidsrc.cc" ? "active" : ""}
+                      onClick={() => setServer("vidsrc.xyz")}
+                      className={server === "vidsrc.xyz" ? "active" : ""}
                     >
                       S4
                     </button>
