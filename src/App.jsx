@@ -52,7 +52,8 @@ const App = () => {
   // FUNGSI PENTING: Menentukan link embed berdasarkan tipe (Movie atau Series)
   const getEmbedUrl = () => {
     const type = selectedMovie.Type === "series" ? "tv" : "movie";
-    return `https://${server}/embed/${type}/${selectedMovie.imdbID}`;
+    // Menggunakan vidsrc.pro atau vidsrc.in yang biasanya lebih lancar untuk HTTPS
+    return `https://vidsrc.pro/embed/${type}/${selectedMovie.imdbID}`;
   };
 
   const renderSection = (title, data) => (
